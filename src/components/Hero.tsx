@@ -4,67 +4,102 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles, ShoppingBag, Gift, Star } from "lucide-react";
 import Link from "next/link";
 
-const SplitText = ({ children, delay = 0 }: { children: string; delay?: number }) => {
+const GlitchText = ({ children, delay = 0 }: { children: string; delay?: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   
   return (
-    <span ref={ref} className="inline-block overflow-hidden">
-      {children.split("").map((char, i) => (
-        <motion.span
-          key={i}
-          className="inline-block"
-          initial={{ y: "100%", opacity: 0, rotateX: -90 }}
-          animate={isInView ? { y: 0, opacity: 1, rotateX: 0 } : {}}
-          transition={{ 
-            duration: 0.8, 
-            delay: delay + i * 0.04, 
-            ease: [0.16, 1, 0.3, 1] 
-          }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
-      ))}
-    </span>
+    <motion.span 
+      ref={ref}
+      className="relative inline-block"
+      initial={{ opacity: 0, y: 100, filter: "blur(10px)" }}
+      animate={isInView ? { 
+        opacity: 1, 
+        y: 0, 
+        filter: "blur(0px)",
+      } : {}}
+      transition={{ 
+        duration: 1.2, 
+        delay,
+        ease: [0.16, 1, 0.3, 1] 
+      }}
+    >
+      <motion.span
+        animate={isInView ? {
+          textShadow: [
+            "0 0 0px transparent",
+            "2px 2px 0px #C9A962, -2px -2px 0px #D4A574",
+            "0 0 0px transparent"
+          ]
+        } : {}}
+        transition={{ duration: 0.3, delay: delay + 0.8 }}
+      >
+        {children}
+      </motion.span>
+    </motion.span>
   );
 };
 
-const MagneticButton = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  
-  const springConfig = { damping: 15, stiffness: 200 };
-  const xSpring = useSpring(x, springConfig);
-  const ySpring = useSpring(y, springConfig);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) * 0.3);
-    y.set((e.clientY - centerY) * 0.3);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
+const ChocolateDripButton = ({ 
+  children, 
+  href,
+  variant = "primary"
+}: { 
+  children: React.ReactNode; 
+  href: string;
+  variant?: "primary" | "outline";
+}) => {
   return (
-    <motion.div
-      ref={ref}
-      style={{ x: xSpring, y: ySpring }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={className}
-    >
-      {children}
-    </motion.div>
+    <Link href={href}>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={`relative group overflow-visible h-16 px-10 text-lg font-bold transition-all duration-300 ${
+          variant === "primary" 
+            ? "bg-gradient-to-r from-primary via-caramel to-primary text-primary-foreground shadow-2xl shadow-primary/40" 
+            : "bg-transparent border-2 border-primary/50 text-foreground hover:border-primary"
+        }`}
+        style={{
+          clipPath: "polygon(8% 0, 100% 0, 100% 70%, 92% 100%, 0 100%, 0 30%)"
+        }}
+      >
+        <motion.div
+          className="absolute -top-3 left-1/4 w-8 h-6 bg-chocolate-dark rounded-b-full opacity-0 group-hover:opacity-100"
+          initial={{ y: -20 }}
+          whileHover={{ y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+        <motion.div
+          className="absolute -top-3 left-1/2 w-6 h-8 bg-chocolate rounded-b-full opacity-0 group-hover:opacity-100"
+          initial={{ y: -20 }}
+          whileHover={{ y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+        />
+        <motion.div
+          className="absolute -top-3 right-1/4 w-5 h-5 bg-chocolate-light rounded-b-full opacity-0 group-hover:opacity-100"
+          initial={{ y: -20 }}
+          whileHover={{ y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
+        />
+        
+        <span className="relative z-10 flex items-center gap-3">
+          {children}
+        </span>
+        
+        {variant === "primary" && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-caramel via-primary to-caramel opacity-0 group-hover:opacity-100"
+            style={{
+              clipPath: "polygon(8% 0, 100% 0, 100% 70%, 92% 100%, 0 100%, 0 30%)"
+            }}
+            transition={{ duration: 0.4 }}
+          />
+        )}
+      </motion.button>
+    </Link>
   );
 };
 
@@ -111,7 +146,6 @@ export function Hero() {
   const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.85]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 10]);
   
   useEffect(() => {
     setMounted(true);
@@ -169,7 +203,7 @@ export function Hero() {
 
       <motion.div 
         style={{ opacity, scale }}
-        className="sticky top-0 min-h-screen flex flex-col justify-center items-center pt-20"
+        className="sticky top-0 min-h-screen flex flex-col justify-center items-center pt-28"
       >
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -184,7 +218,10 @@ export function Hero() {
                 initial={{ opacity: 0, y: 30, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/20 to-caramel/20 backdrop-blur-xl border border-primary/30 rounded-full"
+                className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/20 to-caramel/20 backdrop-blur-xl border border-primary/30"
+                style={{
+                  clipPath: "polygon(5% 0, 100% 0, 95% 100%, 0% 100%)"
+                }}
               >
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -200,7 +237,7 @@ export function Hero() {
               <div className="space-y-2 overflow-hidden">
                 <h1 className="font-[family-name:var(--font-cormorant)] text-6xl md:text-7xl lg:text-8xl xl:text-[10rem] font-bold tracking-tight leading-[0.85]">
                   <div className="overflow-hidden pb-2">
-                    <SplitText delay={0.3}>Home</SplitText>
+                    <GlitchText delay={0.3}>Home</GlitchText>
                   </div>
                   <div className="overflow-hidden">
                     <motion.span
@@ -209,7 +246,15 @@ export function Hero() {
                       transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
                       className="inline-block"
                     >
-                      <span className="gradient-text italic">Bakery</span>
+                      <span className="gradient-text italic relative">
+                        Bakery
+                        <motion.span
+                          className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary via-caramel to-primary"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 1, delay: 1.2 }}
+                        />
+                      </span>
                     </motion.span>
                   </div>
                 </h1>
@@ -236,44 +281,22 @@ export function Hero() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 1.2 }}
-                className="flex flex-wrap gap-4 justify-center lg:justify-start"
+                className="flex flex-wrap gap-6 justify-center lg:justify-start pt-4"
               >
-                <MagneticButton>
-                  <Link href="#menu">
-                    <Button 
-                      size="lg" 
-                      className="group relative overflow-hidden rounded-full h-16 px-10 text-lg bg-primary hover:bg-primary text-primary-foreground font-semibold shadow-2xl shadow-primary/30"
-                    >
-                      <motion.span
-                        className="absolute inset-0 bg-gradient-to-r from-caramel to-primary"
-                        initial={{ x: "-100%" }}
-                        whileHover={{ x: 0 }}
-                        transition={{ duration: 0.4 }}
-                      />
-                      <span className="relative z-10 flex items-center gap-3">
-                        Order Now
-                        <motion.span
-                          animate={{ x: [0, 5, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          <ArrowRight className="w-5 h-5" />
-                        </motion.span>
-                      </span>
-                    </Button>
-                  </Link>
-                </MagneticButton>
+                <ChocolateDripButton href="#menu" variant="primary">
+                  <ShoppingBag className="w-5 h-5" />
+                  Order Now
+                  <motion.span
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight className="w-5 h-5" />
+                  </motion.span>
+                </ChocolateDripButton>
                 
-                <MagneticButton>
-                  <Link href="#about">
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="rounded-full h-16 px-10 text-lg border-2 border-primary/40 hover:bg-primary/10 hover:border-primary text-foreground font-medium backdrop-blur-sm"
-                    >
-                      Our Story
-                    </Button>
-                  </Link>
-                </MagneticButton>
+                <ChocolateDripButton href="#about" variant="outline">
+                  Our Story
+                </ChocolateDripButton>
               </motion.div>
 
               <motion.div
@@ -465,7 +488,146 @@ export function Hero() {
         </motion.div>
       </motion.div>
 
-      <div className="h-screen" />
+      <div className="h-screen relative">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="sticky top-0 h-screen flex items-center justify-center overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-chocolate-dark/50 to-background" />
+          
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-32 h-64 bg-gradient-to-b from-chocolate via-chocolate-dark to-transparent rounded-b-full opacity-30"
+                style={{
+                  left: `${10 + i * 12}%`,
+                  top: -100,
+                }}
+                animate={{
+                  y: [0, 50, 0],
+                  scaleY: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 4 + i * 0.5,
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+            className="relative z-10 max-w-5xl mx-auto px-6"
+          >
+            <div className="relative p-12 md:p-20 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, rgba(61, 35, 20, 0.9) 0%, rgba(30, 17, 10, 0.95) 100%)",
+                clipPath: "polygon(3% 0, 97% 0, 100% 5%, 100% 95%, 97% 100%, 3% 100%, 0 95%, 0 5%)"
+              }}
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-primary to-transparent" />
+              <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-caramel to-transparent" />
+              
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-caramel/10 rounded-full blur-3xl" />
+              
+              <motion.div
+                className="absolute top-4 right-4"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              >
+                <Star className="w-8 h-8 text-primary/30" />
+              </motion.div>
+
+              <div className="relative z-10 text-center space-y-8">
+                <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-3 px-8 py-3 border border-primary/40 bg-primary/10 backdrop-blur-sm"
+                  style={{
+                    clipPath: "polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%)"
+                  }}
+                >
+                  <Gift className="w-5 h-5 text-primary" />
+                  <span className="text-primary font-bold uppercase tracking-[0.3em] text-sm">Limited Time Offer</span>
+                </motion.div>
+
+                <motion.h2
+                  initial={{ y: 50, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="text-5xl md:text-7xl lg:text-8xl font-[family-name:var(--font-cormorant)] font-bold"
+                >
+                  <span className="text-foreground">New Year</span>
+                  <br />
+                  <span className="gradient-text italic">Special</span>
+                </motion.h2>
+
+                <motion.p
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto"
+                >
+                  Indulge in our exclusive collection of handcrafted delights. 
+                  <span className="text-primary font-semibold"> 25% OFF</span> on all premium cakes & pastries.
+                </motion.p>
+
+                <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-wrap gap-8 justify-center pt-4"
+                >
+                  {[
+                    { value: "25%", label: "Discount" },
+                    { value: "48", label: "Hours Left" },
+                    { value: "∞", label: "Happiness" },
+                  ].map((item, i) => (
+                    <div key={i} className="text-center">
+                      <motion.p
+                        className="text-4xl md:text-5xl font-bold gradient-text font-[family-name:var(--font-cormorant)]"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                      >
+                        {item.value}
+                      </motion.p>
+                      <p className="text-xs uppercase tracking-widest text-muted-foreground mt-2">{item.label}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                  className="pt-6"
+                >
+                  <ChocolateDripButton href="#menu" variant="primary">
+                    <ShoppingBag className="w-5 h-5" />
+                    Shop Collection
+                    <ArrowRight className="w-5 h-5" />
+                  </ChocolateDripButton>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
     </section>
   );
 }
