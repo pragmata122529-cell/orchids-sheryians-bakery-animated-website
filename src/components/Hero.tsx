@@ -1,0 +1,471 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
+import Link from "next/link";
+
+const SplitText = ({ children, delay = 0 }: { children: string; delay?: number }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  
+  return (
+    <span ref={ref} className="inline-block overflow-hidden">
+      {children.split("").map((char, i) => (
+        <motion.span
+          key={i}
+          className="inline-block"
+          initial={{ y: "100%", opacity: 0, rotateX: -90 }}
+          animate={isInView ? { y: 0, opacity: 1, rotateX: 0 } : {}}
+          transition={{ 
+            duration: 0.8, 
+            delay: delay + i * 0.04, 
+            ease: [0.16, 1, 0.3, 1] 
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </span>
+  );
+};
+
+const MagneticButton = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const springConfig = { damping: 15, stiffness: 200 };
+  const xSpring = useSpring(x, springConfig);
+  const ySpring = useSpring(y, springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) * 0.3);
+    y.set((e.clientY - centerY) * 0.3);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{ x: xSpring, y: ySpring }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const FloatingElement = ({ 
+  children, 
+  delay = 0, 
+  duration = 6,
+  x = 0,
+  y = 20 
+}: { 
+  children: React.ReactNode; 
+  delay?: number;
+  duration?: number;
+  x?: number;
+  y?: number;
+}) => (
+  <motion.div
+    animate={{ 
+      y: [0, -y, 0],
+      x: [0, x, 0],
+      rotate: [0, 5, -5, 0]
+    }}
+    transition={{ 
+      duration, 
+      repeat: Infinity, 
+      delay,
+      ease: "easeInOut"
+    }}
+  >
+    {children}
+  </motion.div>
+);
+
+export function Hero() {
+  const containerRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.85]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 10]);
+  
+  useEffect(() => {
+    setMounted(true);
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  return (
+    <section 
+      ref={containerRef}
+      className="relative min-h-[200vh] overflow-hidden"
+    >
+      <div className="absolute inset-0">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(201, 169, 98, 0.08) 0%, transparent 100%)",
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        
+        <div className="absolute inset-0 opacity-30">
+          {mounted && [...Array(50)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-primary/50"
+              initial={{
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+              }}
+              animate={{
+                y: [null, -20, 0],
+                opacity: [0.2, 0.8, 0.2],
+                scale: [1, 1.5, 1]
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <motion.div 
+        style={{ opacity, scale }}
+        className="sticky top-0 min-h-screen flex flex-col justify-center items-center pt-20"
+      >
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1 }}
+              className="space-y-8 text-center lg:text-left"
+              style={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/20 to-caramel/20 backdrop-blur-xl border border-primary/30 rounded-full"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </motion.div>
+                <span className="text-sm font-semibold text-primary tracking-wider uppercase">
+                  Artisan Baked Goods
+                </span>
+              </motion.div>
+
+              <div className="space-y-2 overflow-hidden">
+                <h1 className="font-[family-name:var(--font-cormorant)] text-6xl md:text-7xl lg:text-8xl xl:text-[10rem] font-bold tracking-tight leading-[0.85]">
+                  <div className="overflow-hidden pb-2">
+                    <SplitText delay={0.3}>Home</SplitText>
+                  </div>
+                  <div className="overflow-hidden">
+                    <motion.span
+                      initial={{ y: "100%", rotateX: -45 }}
+                      animate={{ y: 0, rotateX: 0 }}
+                      transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                      className="inline-block"
+                    >
+                      <span className="gradient-text italic">Bakery</span>
+                    </motion.span>
+                  </div>
+                </h1>
+                
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-1 w-32 bg-gradient-to-r from-primary to-caramel origin-left mx-auto lg:mx-0"
+                />
+              </div>
+
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1 }}
+                className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0 leading-relaxed"
+              >
+                Where every bite tells a story. Handcrafted with passion, 
+                baked with love, delivered with warmth.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.2 }}
+                className="flex flex-wrap gap-4 justify-center lg:justify-start"
+              >
+                <MagneticButton>
+                  <Link href="#menu">
+                    <Button 
+                      size="lg" 
+                      className="group relative overflow-hidden rounded-full h-16 px-10 text-lg bg-primary hover:bg-primary text-primary-foreground font-semibold shadow-2xl shadow-primary/30"
+                    >
+                      <motion.span
+                        className="absolute inset-0 bg-gradient-to-r from-caramel to-primary"
+                        initial={{ x: "-100%" }}
+                        whileHover={{ x: 0 }}
+                        transition={{ duration: 0.4 }}
+                      />
+                      <span className="relative z-10 flex items-center gap-3">
+                        Order Now
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </motion.span>
+                      </span>
+                    </Button>
+                  </Link>
+                </MagneticButton>
+                
+                <MagneticButton>
+                  <Link href="#about">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="rounded-full h-16 px-10 text-lg border-2 border-primary/40 hover:bg-primary/10 hover:border-primary text-foreground font-medium backdrop-blur-sm"
+                    >
+                      Our Story
+                    </Button>
+                  </Link>
+                </MagneticButton>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 1.4 }}
+                className="flex items-center gap-10 pt-8 justify-center lg:justify-start"
+              >
+                {[
+                  { value: "50+", label: "Recipes" },
+                  { value: "100%", label: "Natural" },
+                  { value: "5★", label: "Rated" },
+                ].map((stat, i) => (
+                  <motion.div 
+                    key={i} 
+                    className="text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.5 + i * 0.1 }}
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <motion.p 
+                      className="text-3xl md:text-4xl font-bold gradient-text font-[family-name:var(--font-cormorant)]"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                    >
+                      {stat.value}
+                    </motion.p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1">
+                      {stat.label}
+                    </p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative"
+              style={{ 
+                x: -mousePosition.x * 0.3, 
+                y: -mousePosition.y * 0.3,
+                rotateY: mousePosition.x * 0.5,
+                rotateX: -mousePosition.y * 0.5
+              }}
+            >
+              <div className="relative aspect-square max-w-[600px] mx-auto">
+                <motion.div
+                  className="absolute inset-0"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                >
+                  <svg className="w-full h-full" viewBox="0 0 400 400">
+                    <defs>
+                      <path
+                        id="circlePath"
+                        d="M 200, 200 m -180, 0 a 180,180 0 1,1 360,0 a 180,180 0 1,1 -360,0"
+                      />
+                    </defs>
+                    <text className="fill-primary/30 text-[14px] uppercase tracking-[0.5em] font-medium">
+                      <textPath href="#circlePath">
+                        ✦ Fresh Daily ✦ Artisan Made ✦ Premium Quality ✦ Homemade Recipes ✦
+                      </textPath>
+                    </text>
+                  </svg>
+                </motion.div>
+
+                <motion.div
+                  className="absolute inset-12 rounded-full overflow-hidden glow-gold"
+                  initial={{ clipPath: "circle(0% at 50% 50%)" }}
+                  animate={{ clipPath: "circle(100% at 50% 50%)" }}
+                  transition={{ duration: 1.5, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Image
+                    src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1000&auto=format&fit=crop"
+                    alt="Artisan Chocolate Cake"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                </motion.div>
+
+                <FloatingElement delay={0} duration={5} y={15}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 1.4 }}
+                    className="absolute -left-4 top-1/4 w-24 h-24 md:w-32 md:h-32"
+                  >
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden border-4 border-background shadow-2xl">
+                      <Image
+                        src="https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=400&auto=format&fit=crop"
+                        alt="Chocolate Donut"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </motion.div>
+                </FloatingElement>
+
+                <FloatingElement delay={1} duration={6} y={20} x={10}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 1.6 }}
+                    className="absolute -right-4 top-1/3 w-20 h-20 md:w-28 md:h-28"
+                  >
+                    <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-background shadow-2xl">
+                      <Image
+                        src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=400&auto=format&fit=crop"
+                        alt="Chocolate Truffles"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </motion.div>
+                </FloatingElement>
+
+                <FloatingElement delay={2} duration={7} y={12}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 1.8 }}
+                    className="absolute left-1/4 -bottom-4 w-20 h-20 md:w-24 md:h-24"
+                  >
+                    <div className="relative w-full h-full rounded-xl overflow-hidden border-4 border-background shadow-2xl">
+                      <Image
+                        src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=400&auto=format&fit=crop"
+                        alt="Croissant"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </motion.div>
+                </FloatingElement>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 2 }}
+                  className="absolute -bottom-8 right-0 bg-card/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-primary/20 shadow-2xl"
+                >
+                  <div className="flex items-center gap-4">
+                    <motion.div 
+                      className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-caramel flex items-center justify-center"
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                    >
+                      <span className="text-3xl">🍰</span>
+                    </motion.div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fresh Baked</p>
+                      <p className="text-lg font-bold text-foreground">Every Morning</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="flex flex-col items-center gap-3 cursor-pointer group"
+          >
+            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground group-hover:text-primary transition-colors font-medium">
+              Scroll Down
+            </span>
+            <motion.div
+              className="w-6 h-10 rounded-full border-2 border-primary/50 flex items-start justify-center p-2 group-hover:border-primary transition-colors"
+            >
+              <motion.div
+                animate={{ y: [0, 8, 0], opacity: [1, 0, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-1.5 h-1.5 rounded-full bg-primary"
+              />
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
+      <div className="h-screen" />
+    </section>
+  );
+}
