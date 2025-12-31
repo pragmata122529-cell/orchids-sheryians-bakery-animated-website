@@ -3,13 +3,13 @@
 import React, { useRef } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
-import { Clock, Leaf, Award, Heart, Sparkles } from "lucide-react";
+import { Clock, Leaf, Award, Heart } from "lucide-react";
 
 const features = [
-  { icon: Clock, title: "Fresh Daily", desc: "Baked every morning at 5 AM", gradient: "from-primary to-caramel" },
-  { icon: Leaf, title: "100% Natural", desc: "No artificial preservatives", gradient: "from-emerald-500 to-green-400" },
-  { icon: Award, title: "Award Winning", desc: "Best bakery 2023 & 2024", gradient: "from-amber-500 to-yellow-400" },
-  { icon: Heart, title: "Made with Love", desc: "Family recipes since 1980", gradient: "from-rose-500 to-pink-400" },
+  { icon: Clock, title: "Fresh Daily", desc: "Baked every morning at 5 AM" },
+  { icon: Leaf, title: "100% Natural", desc: "No artificial preservatives" },
+  { icon: Award, title: "Award Winning", desc: "Best bakery 2023 & 2024" },
+  { icon: Heart, title: "Made with Love", desc: "Family recipes since 1980" },
 ];
 
 export function AboutSection() {
@@ -36,17 +36,10 @@ export function AboutSection() {
           style={{ y: y2 }}
           className="absolute bottom-20 -right-40 w-96 h-96 rounded-full bg-caramel/5 blur-3xl"
         />
-        
-        <svg className="absolute inset-0 w-full h-full opacity-5">
-          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
-          </pattern>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -61,10 +54,7 @@ export function AboutSection() {
                 initial={{ clipPath: "inset(100% 0 0 0)" }}
                 animate={isInView ? { clipPath: "inset(0% 0 0 0)" } : {}}
                 transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 overflow-hidden"
-                style={{
-                  clipPath: "polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%)"
-                }}
+                className="absolute inset-0 rounded-[3rem] overflow-hidden"
               >
                 <Image
                   src="https://images.unsplash.com/photo-1556217477-d325251ece38?q=80&w=800&auto=format&fit=crop"
@@ -79,20 +69,17 @@ export function AboutSection() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="absolute -bottom-8 -right-8 bg-card/95 backdrop-blur-xl p-8 border border-primary/20 shadow-2xl"
-                style={{
-                  clipPath: "polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%)"
-                }}
+                className="absolute -bottom-8 -right-8 bg-card/95 backdrop-blur-xl p-6 rounded-2xl border border-primary/20 shadow-2xl"
               >
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-1">
                   <motion.p 
-                    className="text-6xl font-black gradient-text font-[family-name:var(--font-cormorant)]"
+                    className="text-5xl font-bold gradient-text font-[family-name:var(--font-cormorant)]"
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     44+
                   </motion.p>
-                  <p className="text-sm text-muted-foreground uppercase tracking-[0.2em] font-bold">Years of Tradition</p>
+                  <p className="text-sm text-muted-foreground uppercase tracking-wider">Years of Tradition</p>
                 </div>
               </motion.div>
 
@@ -100,15 +87,12 @@ export function AboutSection() {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.6, delay: 1 }}
-                className="absolute -top-6 -left-6 w-28 h-28 bg-gradient-to-br from-primary to-caramel flex items-center justify-center shadow-2xl"
-                style={{
-                  clipPath: "polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)"
-                }}
+                className="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-primary to-caramel rounded-full flex items-center justify-center shadow-2xl"
               >
                 <motion.span
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="text-5xl"
+                  className="text-4xl"
                 >
                   🥧
                 </motion.span>
@@ -120,21 +104,17 @@ export function AboutSection() {
             initial={{ opacity: 0, x: 50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-10"
+            className="space-y-8"
           >
-            <div className="space-y-6">
-              <motion.div
+            <div className="space-y-4">
+              <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/30"
-                style={{
-                  clipPath: "polygon(5% 0, 100% 0, 95% 100%, 0 100%)"
-                }}
+                className="text-sm uppercase tracking-widest text-primary font-semibold"
               >
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm uppercase tracking-[0.2em] text-primary font-bold">Our Story</span>
-              </motion.div>
+                Our Story
+              </motion.span>
               
               <motion.h2
                 initial={{ opacity: 0, y: 30 }}
@@ -142,15 +122,14 @@ export function AboutSection() {
                 transition={{ duration: 0.8, delay: 0.5 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-cormorant)] font-bold leading-tight"
               >
-                Baking <span className="gradient-text italic">Happiness</span>
-                <br />Since 1980
+                Baking <span className="gradient-text italic">Happiness</span> Since 1980
               </motion.h2>
               
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={isInView ? { scaleX: 1 } : {}}
                 transition={{ duration: 0.8, delay: 0.7 }}
-                className="h-1 w-32 bg-gradient-to-r from-primary to-caramel origin-left"
+                className="h-1 w-24 bg-gradient-to-r from-primary to-caramel origin-left"
               />
             </div>
 
@@ -180,41 +159,27 @@ export function AboutSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="grid grid-cols-2 gap-5 pt-6"
+              className="grid grid-cols-2 gap-4 pt-4"
             >
               {features.map((feature, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 30, rotateX: -20 }}
-                  animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-                  transition={{ duration: 0.6, delay: 0.9 + i * 0.15 }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="relative p-6 bg-card/80 backdrop-blur-sm border border-primary/10 hover:border-primary/40 transition-all duration-500 group overflow-hidden"
-                  style={{
-                    clipPath: "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)"
-                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.9 + i * 0.1 }}
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="p-5 bg-card/50 backdrop-blur-sm rounded-2xl border border-primary/10 hover:border-primary/30 transition-all duration-300 group"
                 >
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  />
-                  
-                  <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-caramel to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <div className="relative z-10 space-y-3">
-                    <motion.div
-                      whileHover={{ rotate: 10, scale: 1.15 }}
-                      className={`w-12 h-12 bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-lg`}
-                      style={{
-                        clipPath: "polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%)"
-                      }}
-                    >
-                      <feature.icon className="w-6 h-6 text-white" />
-                    </motion.div>
-                    <h4 className="font-black uppercase tracking-wide text-foreground group-hover:text-primary transition-colors text-lg">
-                      {feature.title}
-                    </h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                  </div>
+                    whileHover={{ rotate: 10, scale: 1.1 }}
+                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-caramel/20 flex items-center justify-center mb-3"
+                  >
+                    <feature.icon className="w-5 h-5 text-primary" />
+                  </motion.div>
+                  <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1">{feature.desc}</p>
                 </motion.div>
               ))}
             </motion.div>
